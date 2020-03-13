@@ -1,7 +1,7 @@
 import Sequelize from "sequelize";
 import config from "./config";
 
-import Usuario from "../../model/Usuario";
+import Usuario from "../../models/Usuario";
 
 const models = [Usuario];
 
