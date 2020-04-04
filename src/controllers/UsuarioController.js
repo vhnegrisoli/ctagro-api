@@ -7,8 +7,8 @@ class UsuarioController {
 
       const usuario = await Usuario.findOne({
         where: {
-          email
-        }
+          email,
+        },
       });
 
       if (usuario) {
@@ -21,7 +21,7 @@ class UsuarioController {
         nome,
         email,
         senha,
-        data_cadastro: Date()
+        data_cadastro: Date(),
       });
 
       return res.json(novoUsuario);
@@ -45,16 +45,11 @@ class UsuarioController {
         const emailCadastrado = await Usuario.findOne({ where: { email } });
         if (emailCadastrado && usuario.id !== emailCadastrado.id) {
           return res.status(400).json({
-            message: "O email " + email + " já pertence a outro usuário."
+            message: "O email " + email + " já pertence a outro usuário.",
           });
         }
-        const usuarioAtualizado = await Usuario.update({
-          nome,
-          email,
-          senha
-        });
-        console.log(usuarioAtualizado);
-        return res.json(usuarioAtualizado);
+        await usuario.update({ nome, email, senha });
+        return res.json({ message: "Usuário atualizado." });
       }
       return res
         .status(400)
@@ -66,6 +61,12 @@ class UsuarioController {
 
   async findById(req, res) {
     const { id } = req.params;
+    const { authUser } = req;
+    if (parseInt(authUser.id) !== parseInt(id)) {
+      return res.status(403).json({
+        message: "Você não tem permissão para visualizar este usuário",
+      });
+    }
     try {
       const usuario = await Usuario.findByPk(id);
       if (usuario) {
@@ -81,6 +82,12 @@ class UsuarioController {
 
   async findByEmail(req, res) {
     const { email } = req.params;
+    const { authUser } = req;
+    if (authUser.email !== email) {
+      return res.status(403).json({
+        message: "Você não tem permissão para visualizar este usuário",
+      });
+    }
     try {
       const usuario = await Usuario.findOne({ where: { email } });
       if (usuario) {
@@ -111,11 +118,11 @@ class UsuarioController {
       if (usuarioParaRemover) {
         await Usuario.destroy({
           where: {
-            id
-          }
+            id,
+          },
         });
         return res.json({
-          message: "O usuário " + usuarioParaRemover.nome + " foi removido."
+          message: "O usuário " + usuarioParaRemover.nome + " foi removido.",
         });
       }
       return res.json({ message: "Não existe um usuário para o id " + id });
