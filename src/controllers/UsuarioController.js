@@ -30,6 +30,40 @@ class UsuarioController {
     }
   }
 
+  async update(req, res) {
+    const { id } = req.params;
+    try {
+      const { authUser } = req;
+      if (parseInt(id) !== parseInt(authUser.id)) {
+        return res
+          .status(403)
+          .json({ message: "Você não tem permissão para editar este usuário" });
+      }
+      const usuario = await Usuario.findByPk(id);
+      if (usuario) {
+        const { nome, email, senha } = req.body;
+        const emailCadastrado = await Usuario.findOne({ where: { email } });
+        if (emailCadastrado && usuario.id !== emailCadastrado.id) {
+          return res.status(400).json({
+            message: "O email " + email + " já pertence a outro usuário."
+          });
+        }
+        const usuarioAtualizado = await Usuario.update({
+          nome,
+          email,
+          senha
+        });
+        console.log(usuarioAtualizado);
+        return res.json(usuarioAtualizado);
+      }
+      return res
+        .status(400)
+        .json({ message: "Não existe um usuário para o id " + id });
+    } catch (error) {
+      return res.json(error);
+    }
+  }
+
   async findById(req, res) {
     const { id } = req.params;
     try {
