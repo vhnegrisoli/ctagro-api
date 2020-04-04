@@ -2,8 +2,10 @@ import Sequelize from "sequelize";
 import config from "./config";
 
 import Usuario from "../../models/Usuario";
+import Permissao from "../../models/Permissao";
+import UsuarioPermissao from "../../models/UsuarioPermissao";
 
-const models = [Usuario];
+const models = [Usuario, Permissao, UsuarioPermissao];
 
 class Database {
   constructor() {
@@ -12,7 +14,11 @@ class Database {
 
   init() {
     this.connection = new Sequelize(config);
-    models.map(model => model.init(this.connection));
+    models
+      .map((model) => model.init(this.connection))
+      .map(
+        (model) => model.associate && model.associate(this.connection.models)
+      );
   }
 }
 
